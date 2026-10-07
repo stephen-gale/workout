@@ -53,11 +53,12 @@
       padding: 14px 14px 10px;
       margin-bottom: 14px;
     }
-    .exercise h2 { font-size: 18px; margin: 0 0 10px; }
-    .sets { display: grid; grid-template-columns: 1.25fr 1fr 1fr 1fr; gap: 4px 8px; align-items: center; }
-    .sets .head { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; padding-left: 2px; }
-    .sets input { padding: 10px 8px; text-align: center; }
-    .sets input.weight { border-color: var(--muted); }
+    .exercise .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .exercise h2 { font-size: 18px; margin: 0; }
+    .kg { flex: none; display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 14px; }
+    .kg input { width: 76px; padding: 8px; text-align: center; border-color: var(--muted); }
+    .sets { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; }
+    .sets .n { color: var(--muted); font-size: 14px; }
     input {
       width: 100%;
       font: inherit;
@@ -193,19 +194,21 @@
       const draft = draftFor(ex);
       const card = document.createElement('section');
       card.className = 'exercise';
-      card.innerHTML = `<h2></h2><div class="sets"><span class="head">kg</span>` +
-        Array.from({ length: SETS }, (_, i) => `<span class="head">Set ${i + 1}</span>`).join('') + `</div>`;
+      card.innerHTML = `<div class="top"><h2></h2><label class="kg"></label></div><div class="sets"></div>`;
       card.querySelector('h2').textContent = ex;
-      const grid = card.querySelector('.sets');
       const w = makeInput('decimal', last ? fmtNum(last.weight) : '', draft.weight, v => { draft.weight = v; });
       w.classList.add('weight');
       w.setAttribute('aria-label', `${ex} weight (kg)`);
-      grid.appendChild(w);
+      card.querySelector('.kg').append(w, 'kg');
+      const grid = card.querySelector('.sets');
       for (let i = 0; i < SETS; i++) {
         const prev = last && last.reps[i];
         const r = makeInput('numeric', prev != null ? String(prev) : '', draft.reps[i], v => { draft.reps[i] = v; });
         r.setAttribute('aria-label', `${ex} set ${i + 1} reps`);
-        grid.appendChild(r);
+        const n = document.createElement('span');
+        n.className = 'n';
+        n.textContent = `Set ${i + 1}`;
+        grid.append(n, r);
       }
       wrap.appendChild(card);
     });
@@ -234,7 +237,7 @@
       const reps = d.reps.map(r => parseInt(r, 10));
       if (reps.some(Number.isFinite) && !Number.isFinite(weight)) {
         alert(`Enter the weight for ${ex}.`);
-        document.querySelectorAll('.sets input.weight')[n].focus();
+        document.querySelectorAll('input.weight')[n].focus();
         return;
       }
       reps.forEach((r, i) => {
