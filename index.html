@@ -94,6 +94,18 @@
     }
     .tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 10px; margin-top: 28px; }
     .tools input[type=file] { display: none; }
+    body { padding-bottom: calc(env(safe-area-inset-bottom) + 96px); }
+    .timer {
+      position: fixed; left: 50%; transform: translateX(-50%);
+      bottom: calc(env(safe-area-inset-bottom) + 16px);
+      min-width: 160px; padding: 12px 22px;
+      font: inherit; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums;
+      border-radius: 999px; border: 1px solid var(--line);
+      background: var(--card); color: var(--text);
+      box-shadow: 0 4px 16px rgba(0,0,0,.18);
+    }
+    .timer.running { border-color: var(--accent); color: var(--accent); }
+    .timer.over { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
   </style>
 </head>
 <body>
@@ -110,6 +122,7 @@
     <label>Restore<input type="file" id="restore" accept="application/json,.json"></label>
   </div>
 </main>
+<button class="timer" id="timer">Rest 60s</button>
 
 <script>
   const PLAN = [
@@ -289,7 +302,69 @@
     reader.readAsText(file);
   }
 
-  document.getElementById('complete').addEventListener('click', complete);
+  // Rest timer: counts down 60s, chimes, then counts up so you can see how far past you are.
+  const REST = 60;
+  const timerEl = document.getElementById('timer');
+  let restEnd = null, tick = null, chimed = false, audio = null, wakeLock = null;
+
+  function chime() {
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    if (!audio) return;
+    [0, 0.25].forEach(offset => {
+      const o = audio.createOscillator(), g = audio.createGain();
+      const t = audio.currentTime + offset;
+      o.frequency.value = 880;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+      o.connect(g).connect(audio.destination);
+      o.start(t); o.stop(t + 0.22);
+    });
+  }
+
+  function updateTimer() {
+    const left = Math.ceil((restEnd - Date.now()) / 1000);
+    const secs = Math.abs(left);
+    const mmss = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+    if (left > 0) {
+      timerEl.textContent = mmss;
+    } else {
+      if (!chimed) { chimed = true; chime(); }
+      timerEl.textContent = `Go · +${mmss}`;
+      timerEl.classList.add('over');
+    }
+  }
+
+  async function startTimer() {
+    // Audio must be unlocked from a tap, so create it here.
+    try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) {}
+    try { wakeLock = await navigator.wakeLock?.request('screen'); } catch (e) {}
+    restEnd = Date.now() + REST * 1000;
+    chimed = false;
+    timerEl.classList.add('running');
+    timerEl.classList.remove('over');
+    updateTimer();
+    tick = setInterval(updateTimer, 250);
+  }
+
+  function stopTimer() {
+    clearInterval(tick);
+    restEnd = null;
+    try { wakeLock?.release(); } catch (e) {}
+    wakeLock = null;
+    timerEl.classList.remove('running', 'over');
+    timerEl.textContent = `Rest ${REST}s`;
+  }
+
+  timerEl.addEventListener('click', () => restEnd ? stopTimer() : startTimer());
+  document.addEventListener('visibilitychange', async () => {
+    if (restEnd && document.visibilityState === 'visible') {
+      updateTimer();
+      try { wakeLock = await navigator.wakeLock?.request('screen'); } catch (e) {}
+    }
+  });
+
+  document.getElementById('complete').addEventListener('click', () => { stopTimer(); complete(); });
   document.getElementById('export-csv').addEventListener('click', exportCsv);
   document.getElementById('backup').addEventListener('click', backup);
   document.getElementById('restore').addEventListener('change', e => {
