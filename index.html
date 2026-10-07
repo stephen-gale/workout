@@ -53,12 +53,11 @@
       padding: 14px 14px 10px;
       margin-bottom: 14px;
     }
-    .exercise h2 { font-size: 18px; margin: 0 0 4px; }
-    .last { color: var(--hint); font-size: 13px; margin: 0 0 10px; }
-    .last.none { color: var(--muted); }
-    .sets { display: grid; grid-template-columns: auto 1fr 1fr; gap: 6px 10px; align-items: center; }
-    .sets .head { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
-    .sets .n { color: var(--muted); font-size: 14px; padding-right: 4px; }
+    .exercise h2 { font-size: 18px; margin: 0 0 10px; }
+    .sets { display: grid; grid-template-columns: 1.25fr 1fr 1fr 1fr; gap: 4px 8px; align-items: center; }
+    .sets .head { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; padding-left: 2px; }
+    .sets input { padding: 10px 8px; text-align: center; }
+    .sets input.weight { border-color: var(--muted); }
     input {
       width: 100%;
       font: inherit;
@@ -71,7 +70,7 @@
       -moz-appearance: textfield;
     }
     input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    input::placeholder { color: var(--muted); opacity: .6; }
+    input::placeholder { color: var(--muted); opacity: .55; }
     input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
     button.complete {
       width: 100%;
@@ -149,7 +148,7 @@
   const SETS = 3;
   const KEY = 'armsplit:v1';
 
-  // state = { day: 0|1|2, log: [{ date, day, exercise, set, weight, reps }], draft: { [exercise]: [{weight, reps}] } }
+  // state = { day: 0|1|2, log: [{ date, day, exercise, set, weight, reps }], draft: { [exercise]: { weight, reps: [] } } }
   function load() {
     try {
       const s = JSON.parse(localStorage.getItem(KEY));
@@ -162,23 +161,24 @@
   let state = load();
   let undoState = null;
 
-  // Most recent session's sets for an exercise, e.g. [{set:1, weight:12, reps:12}, ...]
+  // Most recent session for an exercise: { weight, reps: [r1, r2, r3] }
   function lastTime(exercise) {
     const entries = state.log.filter(e => e.exercise === exercise);
     if (!entries.length) return null;
     const date = entries[entries.length - 1].date;
-    return { date, sets: entries.filter(e => e.date === date) };
+    const sets = entries.filter(e => e.date === date);
+    const reps = [];
+    sets.forEach(e => { reps[e.set - 1] = e.reps; });
+    return { weight: sets[0].weight, reps };
   }
 
   function fmtNum(n) { return Number.isInteger(n) ? String(n) : String(+n.toFixed(2)); }
-  function fmtDate(iso) {
-    const d = new Date(iso);
-    return d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
-  }
 
-  function describeLast(last) {
-    const parts = last.sets.map(s => `${fmtNum(s.weight)}kg × ${s.reps}`);
-    return `Last time (${fmtDate(last.date)}): ${parts.join(', ')}`;
+  function draftFor(ex) {
+    const d = state.draft[ex];
+    // Older drafts were per-set arrays; start those afresh.
+    if (!d || Array.isArray(d)) return (state.draft[ex] = { weight: '', reps: [] });
+    return d;
   }
 
   function render() {
@@ -188,32 +188,30 @@
     const wrap = document.getElementById('exercises');
     wrap.innerHTML = '';
     day.exercises.forEach(ex => {
+      // Last time's numbers appear only as placeholders; nothing is filled in for you.
       const last = lastTime(ex);
-      const draft = state.draft[ex] || [];
+      const draft = draftFor(ex);
       const card = document.createElement('section');
       card.className = 'exercise';
-      card.innerHTML = `<h2></h2><p class="last"></p><div class="sets">
-        <span></span><span class="head">kg</span><span class="head">reps</span></div>`;
+      card.innerHTML = `<h2></h2><div class="sets"><span class="head">kg</span>` +
+        Array.from({ length: SETS }, (_, i) => `<span class="head">Set ${i + 1}</span>`).join('') + `</div>`;
       card.querySelector('h2').textContent = ex;
-      const lastEl = card.querySelector('.last');
-      if (last) lastEl.textContent = describeLast(last);
-      else { lastEl.textContent = 'First time — no history yet'; lastEl.classList.add('none'); }
       const grid = card.querySelector('.sets');
+      const w = makeInput('decimal', last ? fmtNum(last.weight) : '', draft.weight, v => { draft.weight = v; });
+      w.classList.add('weight');
+      w.setAttribute('aria-label', `${ex} weight (kg)`);
+      grid.appendChild(w);
       for (let i = 0; i < SETS; i++) {
-        const prev = last && last.sets.find(s => s.set === i + 1);
-        const d = draft[i] || {};
-        const n = document.createElement('span');
-        n.className = 'n';
-        n.textContent = `Set ${i + 1}`;
-        const w = makeInput('decimal', prev ? fmtNum(prev.weight) : 'kg', d.weight, ex, i, 'weight');
-        const r = makeInput('numeric', prev ? String(prev.reps) : 'reps', d.reps, ex, i, 'reps');
-        grid.append(n, w, r);
+        const prev = last && last.reps[i];
+        const r = makeInput('numeric', prev != null ? String(prev) : '', draft.reps[i], v => { draft.reps[i] = v; });
+        r.setAttribute('aria-label', `${ex} set ${i + 1} reps`);
+        grid.appendChild(r);
       }
       wrap.appendChild(card);
     });
   }
 
-  function makeInput(mode, placeholder, value, ex, i, field) {
+  function makeInput(mode, placeholder, value, onChange) {
     const el = document.createElement('input');
     el.type = 'number';
     el.inputMode = mode;
@@ -221,16 +219,8 @@
     el.min = '0';
     el.placeholder = placeholder;
     el.value = value ?? '';
-    el.dataset.ex = ex;
-    el.dataset.set = i;
-    el.dataset.field = field;
     // Keep in-progress entries so closing the app mid-workout loses nothing.
-    el.addEventListener('input', () => {
-      const sets = state.draft[ex] || (state.draft[ex] = []);
-      sets[i] = sets[i] || {};
-      sets[i][field] = el.value;
-      save();
-    });
+    el.addEventListener('input', () => { onChange(el.value); save(); });
     return el;
   }
 
@@ -238,17 +228,19 @@
     const day = PLAN[state.day];
     const date = new Date().toISOString();
     const entries = [];
-    day.exercises.forEach(ex => {
-      const sets = state.draft[ex] || [];
-      for (let i = 0; i < SETS; i++) {
-        const s = sets[i] || {};
-        const weight = parseFloat(s.weight);
-        const reps = parseInt(s.reps, 10);
-        if (Number.isFinite(weight) && Number.isFinite(reps)) {
-          entries.push({ date, day: day.name, exercise: ex, set: i + 1, weight, reps });
-        }
+    for (const [n, ex] of day.exercises.entries()) {
+      const d = draftFor(ex);
+      const weight = parseFloat(d.weight);
+      const reps = d.reps.map(r => parseInt(r, 10));
+      if (reps.some(Number.isFinite) && !Number.isFinite(weight)) {
+        alert(`Enter the weight for ${ex}.`);
+        document.querySelectorAll('.sets input.weight')[n].focus();
+        return;
       }
-    });
+      reps.forEach((r, i) => {
+        if (Number.isFinite(r)) entries.push({ date, day: day.name, exercise: ex, set: i + 1, weight, reps: r });
+      });
+    }
     if (!entries.length && !confirm(`Nothing entered. Mark ${day.name} complete anyway?`)) return;
 
     undoState = JSON.stringify(state);
