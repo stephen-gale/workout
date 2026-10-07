@@ -87,22 +87,28 @@
     }
     button.complete:active { opacity: .85; }
     .reminder { text-align: center; color: var(--muted); font-size: 13px; margin: 18px 0 0; }
-    .toast { text-align: center; font-size: 14px; color: var(--muted); min-height: 20px; margin: 12px 0 0; }
+    .toast { text-align: center; font-size: 14px; color: var(--muted); min-height: 20px; margin: 0 0 6px; }
     .toast button, .tools button, .tools label {
       font: inherit; font-size: 13px; color: var(--accent);
       background: none; border: 0; padding: 4px 6px; cursor: pointer;
     }
     .tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 10px; margin-top: 28px; }
     .tools input[type=file] { display: none; }
-    body { padding-bottom: calc(env(safe-area-inset-bottom) + 96px); }
+    /* First screen = workout + reminder; Mark complete sits below the fold so it can't be hit by accident. */
+    .screen {
+      min-height: calc(100svh - env(safe-area-inset-top) - 20px);
+      display: flex; flex-direction: column;
+    }
+    .screen .foot { margin-top: auto; padding: 8px 0 12px; }
+    .screen .reminder { margin: 0; }
+    .below { padding-top: 24px; }
+    header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
     .timer {
-      position: fixed; left: 50%; transform: translateX(-50%);
-      bottom: calc(env(safe-area-inset-bottom) + 16px);
-      min-width: 160px; padding: 12px 22px;
-      font: inherit; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums;
+      flex: none; margin-top: 4px;
+      min-width: 108px; padding: 9px 14px;
+      font: inherit; font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums;
       border-radius: 999px; border: 1px solid var(--line);
       background: var(--card); color: var(--text);
-      box-shadow: 0 4px 16px rgba(0,0,0,.18);
     }
     .timer.running { border-color: var(--accent); color: var(--accent); }
     .timer.over { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
@@ -110,19 +116,29 @@
 </head>
 <body>
 <main>
-  <p class="daynum" id="daynum"></p>
-  <h1 id="dayname"></h1>
-  <div id="exercises"></div>
-  <button class="complete" id="complete">Mark complete</button>
-  <p class="toast" id="toast"></p>
-  <p class="reminder">3 × 12 each · 60s rest · 1–2 reps left in the tank</p>
+  <div class="screen">
+    <header>
+      <div>
+        <p class="daynum" id="daynum"></p>
+        <h1 id="dayname"></h1>
+      </div>
+      <button class="timer" id="timer">Rest 60s</button>
+    </header>
+    <div id="exercises"></div>
+    <div class="foot">
+      <p class="toast" id="toast"></p>
+      <p class="reminder">3 × 12 each · 60s rest · 1–2 reps left in the tank</p>
+    </div>
+  </div>
+  <div class="below">
+    <button class="complete" id="complete">Mark complete</button>
   <div class="tools">
     <button id="export-csv">Export log (CSV)</button>
     <button id="backup">Back up</button>
     <label>Restore<input type="file" id="restore" accept="application/json,.json"></label>
   </div>
+  </div>
 </main>
-<button class="timer" id="timer">Rest 60s</button>
 
 <script>
   const PLAN = [
