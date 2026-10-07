@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111214">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Arms">
+  <title>Arm Split</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <style>
+    :root {
+      --bg: #f6f6f4;
+      --card: #ffffff;
+      --text: #17181a;
+      --muted: #7a7d82;
+      --line: #e3e3e0;
+      --accent: #2f6fed;
+      --accent-text: #ffffff;
+      --hint: #8a6d1f;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111214;
+        --card: #1b1c1f;
+        --text: #f1f1ef;
+        --muted: #8b8e94;
+        --line: #2c2d31;
+        --accent: #5b8cff;
+        --accent-text: #0b0c0e;
+        --hint: #d9b45a;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 24px);
+      -webkit-text-size-adjust: 100%;
+    }
+    main { max-width: 480px; margin: 0 auto; }
+    .daynum { color: var(--muted); font-size: 14px; margin: 0; letter-spacing: .02em; }
+    h1 { font-size: 40px; margin: 2px 0 20px; letter-spacing: -.02em; }
+    .exercise {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 14px 10px;
+      margin-bottom: 14px;
+    }
+    .exercise h2 { font-size: 18px; margin: 0 0 4px; }
+    .last { color: var(--hint); font-size: 13px; margin: 0 0 10px; }
+    .last.none { color: var(--muted); }
+    .sets { display: grid; grid-template-columns: auto 1fr 1fr; gap: 6px 10px; align-items: center; }
+    .sets .head { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+    .sets .n { color: var(--muted); font-size: 14px; padding-right: 4px; }
+    input {
+      width: 100%;
+      font: inherit;
+      font-size: 18px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--text);
+      -moz-appearance: textfield;
+    }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input::placeholder { color: var(--muted); opacity: .6; }
+    input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+    button.complete {
+      width: 100%;
+      margin-top: 6px;
+      padding: 16px;
+      font: inherit;
+      font-size: 18px;
+      font-weight: 600;
+      border: 0;
+      border-radius: 14px;
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+    button.complete:active { opacity: .85; }
+    .reminder { text-align: center; color: var(--muted); font-size: 13px; margin: 18px 0 0; }
+    .toast { text-align: center; font-size: 14px; color: var(--muted); min-height: 20px; margin: 12px 0 0; }
+    .toast button, .tools button, .tools label {
+      font: inherit; font-size: 13px; color: var(--accent);
+      background: none; border: 0; padding: 4px 6px; cursor: pointer;
+    }
+    .tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 10px; margin-top: 28px; }
+    .tools input[type=file] { display: none; }
+  </style>
+</head>
+<body>
+<main>
+  <p class="daynum" id="daynum"></p>
+  <h1 id="dayname"></h1>
+  <div id="exercises"></div>
+  <button class="complete" id="complete">Mark complete</button>
+  <p class="toast" id="toast"></p>
+  <p class="reminder">3 × 12 each · 60s rest · 1–2 reps left in the tank</p>
+  <div class="tools">
+    <button id="export-csv">Export log (CSV)</button>
+    <button id="backup">Back up</button>
+    <label>Restore<input type="file" id="restore" accept="application/json,.json"></label>
+  </div>
+</main>
+
+<script>
+  const PLAN = [
+    { name: 'Biceps',   exercises: ['Incline dumbbell curl', 'Hammer curl'] },
+    { name: 'Triceps',  exercises: ['Seated overhead dumbbell extension', 'Lying dumbbell skull crusher'] },
+    { name: 'Forearms', exercises: ['Reverse curl (palms down)', 'Wrist curl over the bench (palms up)'] },
+  ];
+  const SETS = 3;
+  const KEY = 'armsplit:v1';
+
+  // state = { day: 0|1|2, log: [{ date, day, exercise, set, weight, reps }], draft: { [exercise]: [{weight, reps}] } }
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY));
+      if (s && Array.isArray(s.log)) return { day: s.day || 0, log: s.log, draft: s.draft || {} };
+    } catch (e) {}
+    return { day: 0, log: [], draft: {} };
+  }
+  function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+
+  let state = load();
+  let undoState = null;
+
+  // Most recent session's sets for an exercise, e.g. [{set:1, weight:12, reps:12}, ...]
+  function lastTime(exercise) {
+    const entries = state.log.filter(e => e.exercise === exercise);
+    if (!entries.length) return null;
+    const date = entries[entries.length - 1].date;
+    return { date, sets: entries.filter(e => e.date === date) };
+  }
+
+  function fmtNum(n) { return Number.isInteger(n) ? String(n) : String(+n.toFixed(2)); }
+  function fmtDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+
+  function describeLast(last) {
+    const parts = last.sets.map(s => `${fmtNum(s.weight)}kg × ${s.reps}`);
+    return `Last time (${fmtDate(last.date)}): ${parts.join(', ')}`;
+  }
+
+  function render() {
+    const day = PLAN[state.day];
+    document.getElementById('daynum').textContent = `Day ${state.day + 1} of ${PLAN.length}`;
+    document.getElementById('dayname').textContent = day.name;
+    const wrap = document.getElementById('exercises');
+    wrap.innerHTML = '';
+    day.exercises.forEach(ex => {
+      const last = lastTime(ex);
+      const draft = state.draft[ex] || [];
+      const card = document.createElement('section');
+      card.className = 'exercise';
+      card.innerHTML = `<h2></h2><p class="last"></p><div class="sets">
+        <span></span><span class="head">kg</span><span class="head">reps</span></div>`;
+      card.querySelector('h2').textContent = ex;
+      const lastEl = card.querySelector('.last');
+      if (last) lastEl.textContent = describeLast(last);
+      else { lastEl.textContent = 'First time — no history yet'; lastEl.classList.add('none'); }
+      const grid = card.querySelector('.sets');
+      for (let i = 0; i < SETS; i++) {
+        const prev = last && last.sets.find(s => s.set === i + 1);
+        const d = draft[i] || {};
+        const n = document.createElement('span');
+        n.className = 'n';
+        n.textContent = `Set ${i + 1}`;
+        const w = makeInput('decimal', prev ? fmtNum(prev.weight) : 'kg', d.weight, ex, i, 'weight');
+        const r = makeInput('numeric', prev ? String(prev.reps) : 'reps', d.reps, ex, i, 'reps');
+        grid.append(n, w, r);
+      }
+      wrap.appendChild(card);
+    });
+  }
+
+  function makeInput(mode, placeholder, value, ex, i, field) {
+    const el = document.createElement('input');
+    el.type = 'number';
+    el.inputMode = mode;
+    el.step = mode === 'decimal' ? '0.25' : '1';
+    el.min = '0';
+    el.placeholder = placeholder;
+    el.value = value ?? '';
+    el.dataset.ex = ex;
+    el.dataset.set = i;
+    el.dataset.field = field;
+    // Keep in-progress entries so closing the app mid-workout loses nothing.
+    el.addEventListener('input', () => {
+      const sets = state.draft[ex] || (state.draft[ex] = []);
+      sets[i] = sets[i] || {};
+      sets[i][field] = el.value;
+      save();
+    });
+    return el;
+  }
+
+  function complete() {
+    const day = PLAN[state.day];
+    const date = new Date().toISOString();
+    const entries = [];
+    day.exercises.forEach(ex => {
+      const sets = state.draft[ex] || [];
+      for (let i = 0; i < SETS; i++) {
+        const s = sets[i] || {};
+        const weight = parseFloat(s.weight);
+        const reps = parseInt(s.reps, 10);
+        if (Number.isFinite(weight) && Number.isFinite(reps)) {
+          entries.push({ date, day: day.name, exercise: ex, set: i + 1, weight, reps });
+        }
+      }
+    });
+    if (!entries.length && !confirm(`Nothing entered. Mark ${day.name} complete anyway?`)) return;
+
+    undoState = JSON.stringify(state);
+    state.log.push(...entries);
+    day.exercises.forEach(ex => delete state.draft[ex]);
+    state.day = (state.day + 1) % PLAN.length;
+    save();
+    render();
+    window.scrollTo(0, 0);
+    showToast(`${day.name} done.`, true);
+  }
+
+  function showToast(msg, withUndo) {
+    const t = document.getElementById('toast');
+    t.textContent = msg + ' ';
+    if (withUndo) {
+      const b = document.createElement('button');
+      b.textContent = 'Undo';
+      b.onclick = () => {
+        state = JSON.parse(undoState);
+        undoState = null;
+        save();
+        render();
+        t.textContent = '';
+      };
+      t.appendChild(b);
+    }
+  }
+
+  function download(name, text, type) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type }));
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
+  function today() { return new Date().toISOString().slice(0, 10); }
+
+  function exportCsv() {
+    const esc = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v);
+    const rows = [['date', 'day', 'exercise', 'set', 'weight_kg', 'reps']];
+    state.log.forEach(e => rows.push([e.date, e.day, e.exercise, e.set, e.weight, e.reps]));
+    download(`arm-split-log-${today()}.csv`, rows.map(r => r.map(esc).join(',')).join('\n') + '\n', 'text/csv');
+  }
+
+  function backup() {
+    download(`arm-split-backup-${today()}.json`, JSON.stringify(state, null, 2), 'application/json');
+  }
+
+  function restore(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const s = JSON.parse(reader.result);
+        if (!s || !Array.isArray(s.log)) throw new Error('bad file');
+        if (!confirm(`Replace current data with backup (${s.log.length} logged sets)?`)) return;
+        state = { day: s.day || 0, log: s.log, draft: s.draft || {} };
+        save();
+        render();
+        showToast('Backup restored.');
+      } catch (e) {
+        alert("That file doesn't look like an Arm Split backup.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  document.getElementById('complete').addEventListener('click', complete);
+  document.getElementById('export-csv').addEventListener('click', exportCsv);
+  document.getElementById('backup').addEventListener('click', backup);
+  document.getElementById('restore').addEventListener('change', e => {
+    if (e.target.files[0]) restore(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  // Ask the browser not to evict our data when storage is tight.
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+
+  render();
+</script>
+</body>
+</html>
