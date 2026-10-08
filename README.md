@@ -10,7 +10,15 @@ A tiny offline web app for a 3-day dumbbell arm split.
 - **Export log (CSV)** – every set ever logged: `date, day, exercise, set, weight_kg, reps`.
 - **Back up / Restore** – full JSON snapshot of the app's data.
 
-No build step, no server, no account. Data lives in your browser's local storage on the device.
+No build step, no server. Data lives on the phone and, once **GitHub sync** is set up, is also committed to `data/log.json` in this repo after every completed day, so clearing the browser loses nothing.
+
+## GitHub sync setup (once)
+
+1. github.com → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token.
+2. Repository access: **Only select repositories** → `workout`. Permissions → Repository → **Contents: Read and write**. Pick a long expiry.
+3. In the app, tap **GitHub sync** at the bottom and paste the token.
+
+After clearing the browser, tap **GitHub sync** and paste the token again: the log and current day come back from the repo. If a save fails (no signal), it retries next time the app is opened.
 
 ## Install on your phone
 
@@ -27,4 +35,4 @@ Stored in `localStorage` under `armsplit:v1`:
   "exercise": "Hammer curl", "set": 1, "weight": 10, "reps": 12 }], "draft": {} }
 ```
 
-Back up occasionally – clearing site data or deleting the home-screen app wipes it.
+Without GitHub sync, back up occasionally – clearing site data wipes it.

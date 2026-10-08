@@ -104,6 +104,8 @@
     }
     .tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 10px; margin-top: 28px; }
     .tools input[type=file] { display: none; }
+    .sync { text-align: center; color: var(--muted); font-size: 12px; margin: 6px 0 0; min-height: 16px; }
+    .sync.err { color: var(--hint); }
     /* First screen = workout + reminder; Mark complete sits below the fold so it can't be hit by accident. */
     .screen {
       min-height: calc(100svh - env(safe-area-inset-top) - 20px);
@@ -146,7 +148,9 @@
     <button id="export-csv">Export log (CSV)</button>
     <button id="backup">Back up</button>
     <label>Restore<input type="file" id="restore" accept="application/json,.json"></label>
+    <button id="sync-setup">GitHub sync</button>
   </div>
+  <p class="sync" id="sync"></p>
   </div>
 </main>
 
@@ -264,6 +268,7 @@
     render();
     window.scrollTo(0, 0);
     showToast(`${day.name} done.`, true);
+    push();
   }
 
   function showToast(msg, withUndo) {
@@ -278,6 +283,7 @@
         save();
         render();
         t.textContent = '';
+        push();
       };
       t.appendChild(b);
     }
@@ -316,6 +322,7 @@
         save();
         render();
         showToast('Backup restored.');
+        push();
       } catch (e) {
         alert("That file doesn't look like an Arm Split backup.");
       }
@@ -395,9 +402,145 @@
 
   // Ask the browser not to evict our data when storage is tight.
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+
+  // GitHub sync: the log is committed to data/log.json in the repo, so clearing the
+  // browser loses nothing. Needs a fine-grained token with Contents read/write on the repo.
+  const SYNC_KEY = 'armsplit:sync';
+  const REPO = 'stephen-gale/workout';
+  const DATA_PATH = 'data/log.json';
+  const API = `https://api.github.com/repos/${REPO}/contents/${DATA_PATH}`;
+  const syncEl = document.getElementById('sync');
+
+  function syncConf() {
+    try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || {}; } catch (e) { return {}; }
+  }
+  function setSyncConf(c) { localStorage.setItem(SYNC_KEY, JSON.stringify(c)); }
+
+  function syncStatus(msg, err) {
+    syncEl.textContent = msg;
+    syncEl.classList.toggle('err', !!err);
+  }
+
+  function b64encode(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = '';
+    bytes.forEach(b => { bin += String.fromCharCode(b); });
+    return btoa(bin);
+  }
+  function b64decode(b64) {
+    const bin = atob(b64.replace(/\n/g, ''));
+    return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+  }
+
+  async function gh(method, body) {
+    const res = await fetch(API + (method === 'GET' ? '?ref=main' : ''), {
+      method,
+      cache: 'no-store',
+      headers: {
+        Authorization: `Bearer ${syncConf().token}`,
+        Accept: 'application/vnd.github+json',
+        ...(body ? { 'Content-Type': 'application/json' } : {}),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (res.status === 404 && method === 'GET') return null;
+    if (!res.ok) {
+      const e = new Error(`GitHub ${res.status}`);
+      e.status = res.status;
+      throw e;
+    }
+    return res.json();
+  }
+
+  async function fetchRemote() {
+    const file = await gh('GET');
+    if (!file) return { sha: undefined, data: null };
+    return { sha: file.sha, data: JSON.parse(b64decode(file.content)) };
+  }
+
+  const entryKey = e => `${e.date}|${e.exercise}|${e.set}`;
+
+  // Pull: add any sets from GitHub that this device doesn't have yet.
+  async function pull() {
+    if (!syncConf().token) return;
+    try {
+      syncStatus('Syncing…');
+      const { data } = await fetchRemote();
+      if (data && Array.isArray(data.log)) {
+        const have = new Set(state.log.map(entryKey));
+        const extra = data.log.filter(e => !have.has(entryKey(e)));
+        if (extra.length) {
+          state.log = state.log.concat(extra).sort((a, b) => a.date.localeCompare(b.date));
+          // The device that logged most recently knows which day is next.
+          const remoteLatest = data.log.length ? data.log[data.log.length - 1].date : '';
+          const localLatest = state.log.length ? state.log[state.log.length - 1].date : '';
+          if (remoteLatest >= localLatest && Number.isInteger(data.day)) state.day = data.day;
+          save();
+          render();
+        }
+      }
+      if (syncConf().dirty) await push();
+      else syncStatus('Synced with GitHub ✓');
+    } catch (e) {
+      syncStatus(syncError(e), true);
+    }
+  }
+
+  // Push: write this device's log to GitHub (one commit per change).
+  async function push() {
+    const conf = syncConf();
+    if (!conf.token) return;
+    setSyncConf({ ...conf, dirty: true });
+    syncStatus('Saving to GitHub…');
+    const content = b64encode(JSON.stringify({ day: state.day, log: state.log }, null, 1) + '\n');
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const { sha } = await fetchRemote();
+        await gh('PUT', {
+          message: `Log workout ${new Date().toISOString().slice(0, 10)}`,
+          content,
+          sha,
+          branch: 'main',
+        });
+        setSyncConf({ ...syncConf(), dirty: false });
+        syncStatus('Saved to GitHub ✓');
+        return;
+      } catch (e) {
+        if (e.status !== 409 && e.status !== 422) { syncStatus(syncError(e), true); return; }
+      }
+    }
+    syncStatus('Not saved to GitHub yet — will retry', true);
+  }
+
+  function syncError(e) {
+    if (e.status === 401) return 'GitHub token expired or wrong — tap GitHub sync';
+    if (e.status === 403 || e.status === 404) return "GitHub token can't access the repo — tap GitHub sync";
+    return 'Offline — will save to GitHub later';
+  }
+
+  document.getElementById('sync-setup').addEventListener('click', () => {
+    const conf = syncConf();
+    const token = prompt(
+      conf.token
+        ? 'GitHub sync is on. Paste a new token to replace it, or clear the box to turn sync off.'
+        : `Paste a GitHub fine-grained token with Contents: read & write on ${REPO}.`,
+      conf.token ? '••••' : ''
+    );
+    if (token === null || token === '••••') return;
+    if (!token.trim()) { setSyncConf({}); syncStatus('GitHub sync off'); return; }
+    setSyncConf({ token: token.trim(), dirty: true });
+    pull();
+  });
+
+  window.addEventListener('online', pull);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && syncConf().dirty) push();
+  });
+
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 
   render();
+  if (syncConf().token) pull(); else syncStatus('Saved on this phone only — tap GitHub sync to back up');
 </script>
 </body>
 </html>
