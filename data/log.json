@@ -1,0 +1,53 @@
+{
+ "day": 1,
+ "log": [
+  {
+   "date": "2026-10-08T09:40:37.664Z",
+   "day": "Biceps",
+   "exercise": "Incline dumbbell curl",
+   "set": 1,
+   "weight": 6,
+   "reps": 8
+  },
+  {
+   "date": "2026-10-08T09:40:37.664Z",
+   "day": "Biceps",
+   "exercise": "Incline dumbbell curl",
+   "set": 2,
+   "weight": 6,
+   "reps": 8
+  },
+  {
+   "date": "2026-10-08T09:40:37.664Z",
+   "day": "Biceps",
+   "exercise": "Incline dumbbell curl",
+   "set": 3,
+   "weight": 6,
+   "reps": 8
+  },
+  {
+   "date": "2026-10-08T09:40:37.664Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 1,
+   "weight": 10,
+   "reps": 6
+  },
+  {
+   "date": "2026-10-08T09:40:37.664Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 2,
+   "weight": 10,
+   "reps": 5
+  },
+  {
+   "date": "2026-10-08T09:40:37.664Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 3,
+   "weight": 10,
+   "reps": 5
+  }
+ ]
+}
