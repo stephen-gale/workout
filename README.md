@@ -1,8 +1,8 @@
 # Arm Split
 
-A tiny offline web app for a 2-day dumbbell arm split, with wrist curls supersetted every day.
+A tiny offline web app for a 2-day dumbbell arm split, with forearm work (wrist curl + reverse curl) supersetted every day.
 
-- Shows today's day (Biceps → Triceps → repeat) as two supersets: main lift + wrist curl (palms up), then main lift + reverse wrist curl (palms down).
+- Shows today's day (Biceps → Triceps → repeat) as two supersets: main lift + wrist curl (palms up), then main lift + reverse curl (palms down).
 - Enter the weight (kg) once per exercise, then reps for each of the 3 sets. Last session's numbers show as greyed placeholders – tap a box to type the real value.
 - **Mark complete** saves the sets to the log and moves to the next day (with Undo).
 - **Rest timer** – tap the floating button: counts down 60s, beeps/vibrates, then counts up (`+0:15`) so you can stretch to 90s. Tap again to reset. Keeps the screen awake while running.

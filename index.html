@@ -156,12 +156,12 @@
 </main>
 
 <script>
-  // Each day is two supersets: the main lift, then a wrist exercise straight after.
+  // Each day is two supersets: the main lift, then a forearm exercise straight after.
   const WRIST = 'Wrist curl (palms up)';
-  const REVERSE_WRIST = 'Reverse wrist curl (palms down)';
+  const REVERSE_CURL = 'Reverse curl (palms down)';
   const PLAN = [
-    { name: 'Biceps',  supersets: [['Incline dumbbell curl', WRIST], ['Hammer curl', REVERSE_WRIST]] },
-    { name: 'Triceps', supersets: [['Seated overhead dumbbell extension', WRIST], ['Lying dumbbell skull crusher', REVERSE_WRIST]] },
+    { name: 'Biceps',  supersets: [['Incline dumbbell curl', WRIST], ['Hammer curl', REVERSE_CURL]] },
+    { name: 'Triceps', supersets: [['Seated overhead dumbbell extension', WRIST], ['Lying dumbbell skull crusher', REVERSE_CURL]] },
   ];
   const exercisesOf = day => day.supersets.flat();
   const SETS = 3;
