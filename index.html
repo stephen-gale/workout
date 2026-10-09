@@ -63,12 +63,13 @@
       padding: 14px 14px 10px;
       margin-bottom: 14px;
     }
-    .exercise .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-    .exercise h2 { font-size: 21px; line-height: 1.1; font-weight: 800; letter-spacing: .02em; margin: 0; }
-    .kg { flex: none; display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 15px; font-weight: 600; letter-spacing: .06em; }
-    .kg input { width: 76px; padding: 8px; text-align: center; border-color: var(--muted); }
-    .sets { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; }
+    .exercise h2 { font-size: 17px; line-height: 1.1; font-weight: 800; letter-spacing: .02em; margin: 0; align-self: end; }
+    .exercise h2.pair { color: var(--muted); }
+    .sets { display: grid; grid-template-columns: auto 1fr 1fr; gap: 6px 10px; align-items: center; }
     .sets .n { color: var(--muted); font-size: 15px; font-weight: 600; letter-spacing: .06em; }
+    .kg { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 15px; font-weight: 600; letter-spacing: .06em; margin-bottom: 4px; }
+    .kg input { flex: 1; min-width: 0; padding: 8px; text-align: center; border-color: var(--muted); }
+    .sets > input { min-width: 0; }
     input {
       width: 100%;
       font: inherit;
@@ -155,11 +156,14 @@
 </main>
 
 <script>
+  // Each day is two supersets: the main lift, then a wrist exercise straight after.
+  const WRIST = 'Wrist curl (palms up)';
+  const REVERSE_WRIST = 'Reverse wrist curl (palms down)';
   const PLAN = [
-    { name: 'Biceps',   exercises: ['Incline dumbbell curl', 'Hammer curl'] },
-    { name: 'Triceps',  exercises: ['Seated overhead dumbbell extension', 'Lying dumbbell skull crusher'] },
-    { name: 'Forearms', exercises: ['Reverse curl (palms down)', 'Wrist curl over the bench (palms up)'] },
+    { name: 'Biceps',  supersets: [['Incline dumbbell curl', WRIST], ['Hammer curl', REVERSE_WRIST]] },
+    { name: 'Triceps', supersets: [['Seated overhead dumbbell extension', WRIST], ['Lying dumbbell skull crusher', REVERSE_WRIST]] },
   ];
+  const exercisesOf = day => day.supersets.flat();
   const SETS = 3;
   const KEY = 'armsplit:v1';
 
@@ -167,7 +171,7 @@
   function load() {
     try {
       const s = JSON.parse(localStorage.getItem(KEY));
-      if (s && Array.isArray(s.log)) return { day: s.day || 0, log: s.log, draft: s.draft || {} };
+      if (s && Array.isArray(s.log)) return { day: (s.day || 0) % PLAN.length, log: s.log, draft: s.draft || {} };
     } catch (e) {}
     return { day: 0, log: [], draft: {} };
   }
@@ -202,27 +206,46 @@
     document.getElementById('dayname').textContent = day.name;
     const wrap = document.getElementById('exercises');
     wrap.innerHTML = '';
-    day.exercises.forEach(ex => {
-      // Last time's numbers appear only as placeholders; nothing is filled in for you.
-      const last = lastTime(ex);
-      const draft = draftFor(ex);
+    day.supersets.forEach(pair => {
       const card = document.createElement('section');
       card.className = 'exercise';
-      card.innerHTML = `<div class="top"><h2></h2><label class="kg"></label></div><div class="sets"></div>`;
-      card.querySelector('h2').textContent = ex;
-      const w = makeInput('decimal', last ? fmtNum(last.weight) : '', draft.weight, v => { draft.weight = v; });
-      w.classList.add('weight');
-      w.setAttribute('aria-label', `${ex} weight (kg)`);
-      card.querySelector('.kg').append(w, 'kg');
-      const grid = card.querySelector('.sets');
+      const grid = document.createElement('div');
+      grid.className = 'sets';
+      card.appendChild(grid);
+      // Last time's numbers appear only as placeholders; nothing is filled in for you.
+      const cols = pair.map(ex => ({ ex, last: lastTime(ex), draft: draftFor(ex) }));
+
+      grid.appendChild(document.createElement('span'));
+      cols.forEach(({ ex }, c) => {
+        const h = document.createElement('h2');
+        h.textContent = (c ? '+ ' : '') + ex;
+        if (c) h.className = 'pair';
+        grid.appendChild(h);
+      });
+
+      grid.appendChild(document.createElement('span'));
+      cols.forEach(({ ex, last, draft }) => {
+        const kg = document.createElement('label');
+        kg.className = 'kg';
+        const w = makeInput('decimal', last ? fmtNum(last.weight) : '', draft.weight, v => { draft.weight = v; });
+        w.classList.add('weight');
+        w.dataset.ex = ex;
+        w.setAttribute('aria-label', `${ex} weight (kg)`);
+        kg.append(w, 'kg');
+        grid.appendChild(kg);
+      });
+
       for (let i = 0; i < SETS; i++) {
-        const prev = last && last.reps[i];
-        const r = makeInput('numeric', prev != null ? String(prev) : '', draft.reps[i], v => { draft.reps[i] = v; });
-        r.setAttribute('aria-label', `${ex} set ${i + 1} reps`);
         const n = document.createElement('span');
         n.className = 'n';
         n.textContent = `Set ${i + 1}`;
-        grid.append(n, r);
+        grid.appendChild(n);
+        cols.forEach(({ ex, last, draft }) => {
+          const prev = last && last.reps[i];
+          const r = makeInput('numeric', prev != null ? String(prev) : '', draft.reps[i], v => { draft.reps[i] = v; });
+          r.setAttribute('aria-label', `${ex} set ${i + 1} reps`);
+          grid.appendChild(r);
+        });
       }
       wrap.appendChild(card);
     });
@@ -245,13 +268,13 @@
     const day = PLAN[state.day];
     const date = new Date().toISOString();
     const entries = [];
-    for (const [n, ex] of day.exercises.entries()) {
+    for (const ex of exercisesOf(day)) {
       const d = draftFor(ex);
       const weight = parseFloat(d.weight);
       const reps = d.reps.map(r => parseInt(r, 10));
       if (reps.some(Number.isFinite) && !Number.isFinite(weight)) {
         alert(`Enter the weight for ${ex}.`);
-        document.querySelectorAll('input.weight')[n].focus();
+        document.querySelector(`input.weight[data-ex="${CSS.escape(ex)}"]`).focus();
         return;
       }
       reps.forEach((r, i) => {
@@ -262,7 +285,7 @@
 
     undoState = JSON.stringify(state);
     state.log.push(...entries);
-    day.exercises.forEach(ex => delete state.draft[ex]);
+    exercisesOf(day).forEach(ex => delete state.draft[ex]);
     state.day = (state.day + 1) % PLAN.length;
     save();
     render();
@@ -318,7 +341,7 @@
         const s = JSON.parse(reader.result);
         if (!s || !Array.isArray(s.log)) throw new Error('bad file');
         if (!confirm(`Replace current data with backup (${s.log.length} logged sets)?`)) return;
-        state = { day: s.day || 0, log: s.log, draft: s.draft || {} };
+        state = { day: (s.day || 0) % PLAN.length, log: s.log, draft: s.draft || {} };
         save();
         render();
         showToast('Backup restored.');
@@ -474,7 +497,7 @@
           // The device that logged most recently knows which day is next.
           const remoteLatest = data.log.length ? data.log[data.log.length - 1].date : '';
           const localLatest = state.log.length ? state.log[state.log.length - 1].date : '';
-          if (remoteLatest >= localLatest && Number.isInteger(data.day)) state.day = data.day;
+          if (remoteLatest >= localLatest && Number.isInteger(data.day)) state.day = data.day % PLAN.length;
           save();
           render();
         }
