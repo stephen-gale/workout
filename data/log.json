@@ -1,5 +1,5 @@
 {
- "day": 1,
+ "day": 2,
  "log": [
   {
    "date": "2026-10-08T09:40:37.664Z",
@@ -48,6 +48,54 @@
    "set": 3,
    "weight": 10,
    "reps": 5
+  },
+  {
+   "date": "2026-10-09T10:15:30.853Z",
+   "day": "Triceps",
+   "exercise": "Seated overhead dumbbell extension",
+   "set": 1,
+   "weight": 10,
+   "reps": 12
+  },
+  {
+   "date": "2026-10-09T10:15:30.853Z",
+   "day": "Triceps",
+   "exercise": "Seated overhead dumbbell extension",
+   "set": 2,
+   "weight": 10,
+   "reps": 10
+  },
+  {
+   "date": "2026-10-09T10:15:30.853Z",
+   "day": "Triceps",
+   "exercise": "Seated overhead dumbbell extension",
+   "set": 3,
+   "weight": 10,
+   "reps": 10
+  },
+  {
+   "date": "2026-10-09T10:15:30.853Z",
+   "day": "Triceps",
+   "exercise": "Lying dumbbell skull crusher",
+   "set": 1,
+   "weight": 6,
+   "reps": 7
+  },
+  {
+   "date": "2026-10-09T10:15:30.853Z",
+   "day": "Triceps",
+   "exercise": "Lying dumbbell skull crusher",
+   "set": 2,
+   "weight": 6,
+   "reps": 7
+  },
+  {
+   "date": "2026-10-09T10:15:30.853Z",
+   "day": "Triceps",
+   "exercise": "Lying dumbbell skull crusher",
+   "set": 3,
+   "weight": 6,
+   "reps": 4
   }
  ]
 }
