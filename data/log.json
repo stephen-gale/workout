@@ -1,5 +1,5 @@
 {
- "day": 2,
+ "day": 1,
  "log": [
   {
    "date": "2026-10-08T09:40:37.664Z",
@@ -96,6 +96,102 @@
    "set": 3,
    "weight": 6,
    "reps": 4
+  },
+  {
+   "date": "2026-10-10T21:15:37.833Z",
+   "day": "Biceps",
+   "exercise": "Incline dumbbell curl",
+   "set": 1,
+   "weight": 6,
+   "reps": 10
+  },
+  {
+   "date": "2026-10-10T21:15:37.833Z",
+   "day": "Biceps",
+   "exercise": "Incline dumbbell curl",
+   "set": 2,
+   "weight": 6,
+   "reps": 8
+  },
+  {
+   "date": "2026-10-10T21:15:37.833Z",
+   "day": "Biceps",
+   "exercise": "Incline dumbbell curl",
+   "set": 3,
+   "weight": 6,
+   "reps": 6
+  },
+  {
+   "date": "2026-10-10T21:15:37.833Z",
+   "day": "Biceps",
+   "exercise": "Wrist curl (palms up)",
+   "set": 1,
+   "weight": 10,
+   "reps": 14
+  },
+  {
+   "date": "2026-10-10T21:15:37.833Z",
+   "day": "Biceps",
+   "exercise": "Wrist curl (palms up)",
+   "set": 2,
+   "weight": 10,
+   "reps": 13
+  },
+  {
+   "date": "2026-10-10T21:15:37.833Z",
+   "day": "Biceps",
+   "exercise": "Wrist curl (palms up)",
+   "set": 3,
+   "weight": 10,
+   "reps": 11
+  },
+  {
+   "date": "2026-10-10T21:15:37.833Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 1,
+   "weight": 10,
+   "reps": 8
+  },
+  {
+   "date": "2026-10-10T21:15:37.833Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 2,
+   "weight": 10,
+   "reps": 7
+  },
+  {
+   "date": "2026-10-10T21:15:37.833Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 3,
+   "weight": 10,
+   "reps": 5
+  },
+  {
+   "date": "2026-10-10T21:15:37.833Z",
+   "day": "Biceps",
+   "exercise": "Reverse curl (palms down)",
+   "set": 1,
+   "weight": 6,
+   "reps": 6
+  },
+  {
+   "date": "2026-10-10T21:15:37.833Z",
+   "day": "Biceps",
+   "exercise": "Reverse curl (palms down)",
+   "set": 2,
+   "weight": 6,
+   "reps": 7
+  },
+  {
+   "date": "2026-10-10T21:15:37.833Z",
+   "day": "Biceps",
+   "exercise": "Reverse curl (palms down)",
+   "set": 3,
+   "weight": 6,
+   "reps": 5
   }
  ]
 }
