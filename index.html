@@ -65,11 +65,13 @@
     }
     .exercise h2 { font-size: 17px; line-height: 1.1; font-weight: 800; letter-spacing: .02em; margin: 0; align-self: end; }
     .exercise h2.pair { color: var(--muted); }
-    .sets { display: grid; grid-template-columns: auto 1fr 1fr; gap: 6px 10px; align-items: center; }
-    .sets .n { color: var(--muted); font-size: 15px; font-weight: 600; letter-spacing: .06em; }
-    .kg { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 15px; font-weight: 600; letter-spacing: .06em; margin-bottom: 4px; }
-    .kg input { flex: 1; min-width: 0; padding: 8px; text-align: center; border-color: var(--muted); }
-    .sets > input { min-width: 0; }
+    .sets { display: grid; grid-template-columns: auto 1fr 1fr 1fr 1fr; gap: 6px 6px; align-items: center; }
+    .sets .b { margin-left: 8px; }
+    .sets h2 { grid-column: span 2; }
+    .sets .n { color: var(--muted); font-size: 14px; font-weight: 600; letter-spacing: .04em; white-space: nowrap; }
+    .sets .head { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; text-align: center; }
+    .sets > input { min-width: 0; padding: 10px 2px; font-size: 17px; text-align: center; }
+    .sets > input.weight { border-color: var(--muted); }
     input {
       width: 100%;
       font: inherit;
@@ -167,7 +169,7 @@
   const SETS = 3;
   const KEY = 'armsplit:v1';
 
-  // state = { day: 0|1|2, log: [{ date, day, exercise, set, weight, reps }], draft: { [exercise]: { weight, reps: [] } } }
+  // state = { day: 0|1|2, log: [{ date, day, exercise, set, weight, reps }], draft: { [exercise]: { weights: [], reps: [] } } }
   function load() {
     try {
       const s = JSON.parse(localStorage.getItem(KEY));
@@ -180,23 +182,24 @@
   let state = load();
   let undoState = null;
 
-  // Most recent session for an exercise: { weight, reps: [r1, r2, r3] }
+  // Most recent session for an exercise: { weights: [w1, w2, w3], reps: [r1, r2, r3] }
   function lastTime(exercise) {
     const entries = state.log.filter(e => e.exercise === exercise);
     if (!entries.length) return null;
     const date = entries[entries.length - 1].date;
     const sets = entries.filter(e => e.date === date);
-    const reps = [];
-    sets.forEach(e => { reps[e.set - 1] = e.reps; });
-    return { weight: sets[0].weight, reps };
+    const weights = [], reps = [];
+    sets.forEach(e => { weights[e.set - 1] = e.weight; reps[e.set - 1] = e.reps; });
+    return { weights, reps };
   }
 
   function fmtNum(n) { return Number.isInteger(n) ? String(n) : String(+n.toFixed(2)); }
 
   function draftFor(ex) {
     const d = state.draft[ex];
-    // Older drafts were per-set arrays; start those afresh.
-    if (!d || Array.isArray(d)) return (state.draft[ex] = { weight: '', reps: [] });
+    if (!d || Array.isArray(d)) return (state.draft[ex] = { weights: [], reps: [] });
+    // Older drafts had one weight per exercise; copy it to every set.
+    if (!d.weights) { d.weights = d.weight ? Array(SETS).fill(d.weight) : []; delete d.weight; }
     return d;
   }
 
@@ -219,20 +222,18 @@
       cols.forEach(({ ex }, c) => {
         const h = document.createElement('h2');
         h.textContent = (c ? '+ ' : '') + ex;
-        if (c) h.className = 'pair';
+        h.className = c ? 'pair b' : '';
         grid.appendChild(h);
       });
 
       grid.appendChild(document.createElement('span'));
-      cols.forEach(({ ex, last, draft }) => {
-        const kg = document.createElement('label');
-        kg.className = 'kg';
-        const w = makeInput('decimal', last ? fmtNum(last.weight) : '', draft.weight, v => { draft.weight = v; });
-        w.classList.add('weight');
-        w.dataset.ex = ex;
-        w.setAttribute('aria-label', `${ex} weight (kg)`);
-        kg.append(w, 'kg');
-        grid.appendChild(kg);
+      cols.forEach((_, c) => {
+        ['kg', 'reps'].forEach((label, k) => {
+          const el = document.createElement('span');
+          el.className = 'head' + (c && !k ? ' b' : '');
+          el.textContent = label;
+          grid.appendChild(el);
+        });
       });
 
       for (let i = 0; i < SETS; i++) {
@@ -240,11 +241,17 @@
         n.className = 'n';
         n.textContent = `Set ${i + 1}`;
         grid.appendChild(n);
-        cols.forEach(({ ex, last, draft }) => {
-          const prev = last && last.reps[i];
-          const r = makeInput('numeric', prev != null ? String(prev) : '', draft.reps[i], v => { draft.reps[i] = v; });
+        cols.forEach(({ ex, last, draft }, c) => {
+          const pw = last && last.weights[i], pr = last && last.reps[i];
+          const w = makeInput('decimal', pw != null ? fmtNum(pw) : '', draft.weights[i], v => { draft.weights[i] = v; });
+          w.classList.add('weight');
+          if (c) w.classList.add('b');
+          w.dataset.ex = ex;
+          w.dataset.set = i;
+          w.setAttribute('aria-label', `${ex} set ${i + 1} weight (kg)`);
+          const r = makeInput('numeric', pr != null ? String(pr) : '', draft.reps[i], v => { draft.reps[i] = v; });
           r.setAttribute('aria-label', `${ex} set ${i + 1} reps`);
-          grid.appendChild(r);
+          grid.append(w, r);
         });
       }
       wrap.appendChild(card);
@@ -270,16 +277,17 @@
     const entries = [];
     for (const ex of exercisesOf(day)) {
       const d = draftFor(ex);
-      const weight = parseFloat(d.weight);
-      const reps = d.reps.map(r => parseInt(r, 10));
-      if (reps.some(Number.isFinite) && !Number.isFinite(weight)) {
-        alert(`Enter the weight for ${ex}.`);
-        document.querySelector(`input.weight[data-ex="${CSS.escape(ex)}"]`).focus();
-        return;
+      for (let i = 0; i < SETS; i++) {
+        const weight = parseFloat(d.weights[i]);
+        const reps = parseInt(d.reps[i], 10);
+        if (!Number.isFinite(reps)) continue;
+        if (!Number.isFinite(weight)) {
+          alert(`Enter the weight for ${ex}, set ${i + 1}.`);
+          document.querySelector(`input.weight[data-ex="${CSS.escape(ex)}"][data-set="${i}"]`).focus();
+          return;
+        }
+        entries.push({ date, day: day.name, exercise: ex, set: i + 1, weight, reps });
       }
-      reps.forEach((r, i) => {
-        if (Number.isFinite(r)) entries.push({ date, day: day.name, exercise: ex, set: i + 1, weight, reps: r });
-      });
     }
     if (!entries.length && !confirm(`Nothing entered. Mark ${day.name} complete anyway?`)) return;
 
