@@ -162,8 +162,8 @@
   const WRIST = 'Wrist curl (palms up)';
   const REVERSE_CURL = 'Reverse curl (palms down)';
   const PLAN = [
-    { name: 'Biceps',  supersets: [['Incline dumbbell curl', WRIST], ['Hammer curl', REVERSE_CURL]] },
-    { name: 'Triceps', supersets: [['Seated overhead dumbbell extension', WRIST], ['Lying dumbbell skull crusher', REVERSE_CURL]] },
+    { name: 'Biceps',  supersets: [['Incline dumbbell curl', REVERSE_CURL], ['Hammer curl', WRIST]] },
+    { name: 'Triceps', supersets: [['Seated overhead dumbbell extension', REVERSE_CURL], ['Lying dumbbell skull crusher', WRIST]] },
   ];
   const exercisesOf = day => day.supersets.flat();
   // Short labels for the screen; the log keeps the full names.
