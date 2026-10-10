@@ -166,6 +166,16 @@
     { name: 'Triceps', supersets: [['Seated overhead dumbbell extension', WRIST], ['Lying dumbbell skull crusher', REVERSE_CURL]] },
   ];
   const exercisesOf = day => day.supersets.flat();
+  // Short labels for the screen; the log keeps the full names.
+  const SHORT = {
+    'Incline dumbbell curl': 'Incline DB Curl',
+    'Hammer curl': 'Hammer Curl',
+    'Seated overhead dumbbell extension': 'Ovrhd DB Ext',
+    'Lying dumbbell skull crusher': 'DB Skull Crusher',
+    [WRIST]: 'Wrist Curl',
+    [REVERSE_CURL]: 'Rev Curl',
+  };
+  const label = ex => SHORT[ex] || ex;
   const SETS = 3;
   const KEY = 'armsplit:v1';
 
@@ -221,7 +231,7 @@
       grid.appendChild(document.createElement('span'));
       cols.forEach(({ ex }, c) => {
         const h = document.createElement('h2');
-        h.textContent = (c ? '+ ' : '') + ex;
+        h.textContent = (c ? '+ ' : '') + label(ex);
         h.className = c ? 'pair b' : '';
         grid.appendChild(h);
       });
@@ -282,7 +292,7 @@
         const reps = parseInt(d.reps[i], 10);
         if (!Number.isFinite(reps)) continue;
         if (!Number.isFinite(weight)) {
-          alert(`Enter the weight for ${ex}, set ${i + 1}.`);
+          alert(`Enter the weight for ${label(ex)}, set ${i + 1}.`);
           document.querySelector(`input.weight[data-ex="${CSS.escape(ex)}"][data-set="${i}"]`).focus();
           return;
         }
