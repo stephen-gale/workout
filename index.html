@@ -128,9 +128,22 @@
     }
     .timer.running { border-color: var(--accent); color: var(--accent); }
     .timer.over { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    /* Pinned to the top while resting, so it stays visible with the keyboard up. */
+    .restbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      padding: calc(env(safe-area-inset-top) + 8px) 16px 8px;
+      background: var(--card); border-bottom: 2px solid var(--accent); color: var(--accent);
+      font-family: "Barlow Condensed", "Arial Narrow", sans-serif; text-transform: uppercase;
+      font-size: 30px; font-weight: 800; letter-spacing: .05em; font-variant-numeric: tabular-nums;
+      text-align: center; cursor: pointer;
+    }
+    .restbar.over { background: var(--accent); color: var(--accent-text); }
+    .restbar[hidden] { display: none; }
+    .sets > input { scroll-margin-top: 72px; }
   </style>
 </head>
 <body>
+<div class="restbar" id="restbar" hidden></div>
 <main>
   <div class="screen">
     <header>
@@ -262,6 +275,8 @@
           w.setAttribute('aria-label', `${ex} set ${i + 1} weight (kg)`);
           const r = makeInput('numeric', pr != null ? String(pr) : '', draft.reps[i], v => { draft.reps[i] = v; });
           r.setAttribute('aria-label', `${ex} set ${i + 1} reps`);
+          // Last box of a superset row: the keyboard's action key runs the rest timer.
+          if (c === cols.length - 1) { r.enterKeyHint = 'go'; r.classList.add('end'); }
           grid.append(w, r);
         });
       }
@@ -277,6 +292,7 @@
     el.min = '0';
     el.placeholder = placeholder;
     el.value = value ?? '';
+    el.enterKeyHint = 'next';
     // Keep in-progress entries so closing the app mid-workout loses nothing.
     el.addEventListener('input', () => { onChange(el.value); save(); });
     return el;
@@ -375,6 +391,7 @@
   // Rest timer: counts down 60s, chimes, then counts up so you can see how far past you are.
   const REST = 60;
   const timerEl = document.getElementById('timer');
+  const restBar = document.getElementById('restbar');
   let restEnd = null, tick = null, chimed = false, audio = null, wakeLock = null;
 
   function chime() {
@@ -397,24 +414,28 @@
     const secs = Math.abs(left);
     const mmss = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
     if (left > 0) {
-      timerEl.textContent = mmss;
+      timerEl.textContent = restBar.textContent = mmss;
     } else {
       if (!chimed) { chimed = true; chime(); }
-      timerEl.textContent = `Go · +${mmss}`;
+      timerEl.textContent = restBar.textContent = `Go · +${mmss}`;
       timerEl.classList.add('over');
+      restBar.classList.add('over');
     }
   }
 
   async function startTimer() {
     // Audio must be unlocked from a tap, so create it here.
     try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) {}
-    try { wakeLock = await navigator.wakeLock?.request('screen'); } catch (e) {}
+    clearInterval(tick);
     restEnd = Date.now() + REST * 1000;
     chimed = false;
     timerEl.classList.add('running');
     timerEl.classList.remove('over');
+    restBar.classList.remove('over');
+    restBar.hidden = false;
     updateTimer();
     tick = setInterval(updateTimer, 250);
+    try { wakeLock = await navigator.wakeLock?.request('screen'); } catch (e) {}
   }
 
   function stopTimer() {
@@ -424,9 +445,30 @@
     wakeLock = null;
     timerEl.classList.remove('running', 'over');
     timerEl.textContent = `Rest ${REST}s`;
+    restBar.hidden = true;
   }
 
   timerEl.addEventListener('click', () => restEnd ? stopTimer() : startTimer());
+  restBar.addEventListener('click', stopTimer);
+
+  // Keyboard-only flow: the action key moves kg → reps → kg → reps. On the last box of a
+  // row it starts the rest timer, then stops it, then moves on to the next set.
+  let stoppedOn = null;
+  function focusNext(from) {
+    const inputs = [...document.querySelectorAll('#exercises input')];
+    const next = inputs[inputs.indexOf(from) + 1];
+    if (next) next.focus(); else from.blur();
+  }
+  document.getElementById('exercises').addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+    e.preventDefault();
+    const el = e.target;
+    if (!el.classList.contains('end')) return focusNext(el);
+    if (restEnd) { stopTimer(); stoppedOn = el; }
+    else if (stoppedOn === el) { stoppedOn = null; focusNext(el); }
+    else startTimer();
+  });
+  document.addEventListener('focusin', e => { if (e.target !== stoppedOn) stoppedOn = null; });
   document.addEventListener('visibilitychange', async () => {
     if (restEnd && document.visibilityState === 'visible') {
       updateTimer();
