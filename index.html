@@ -453,22 +453,41 @@
 
   // Keyboard-only flow: the action key moves kg → reps → kg → reps. On the last box of a
   // row it starts the rest timer, then stops it, then moves on to the next set.
-  let stoppedOn = null;
+  // Some keyboards (e.g. Samsung) always send "Next" and move focus themselves, so besides
+  // Enter we also catch focus leaving a row's last box without a tap.
+  let stoppedOn = null, lastTap = 0, advancing = false;
+  document.addEventListener('pointerdown', () => { lastTap = Date.now(); }, true);
+
   function focusNext(from) {
     const inputs = [...document.querySelectorAll('#exercises input')];
     const next = inputs[inputs.indexOf(from) + 1];
+    advancing = true;
     if (next) next.focus(); else from.blur();
+    advancing = false;
   }
-  document.getElementById('exercises').addEventListener('keydown', e => {
+
+  // Returns true if focus should stay on the box (timer started or stopped).
+  function restStep(el) {
+    if (restEnd) { stopTimer(); stoppedOn = el; return true; }
+    if (stoppedOn === el) { stoppedOn = null; return false; }
+    startTimer();
+    return true;
+  }
+
+  const exercisesEl = document.getElementById('exercises');
+  exercisesEl.addEventListener('keydown', e => {
     if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
     e.preventDefault();
     const el = e.target;
-    if (!el.classList.contains('end')) return focusNext(el);
-    if (restEnd) { stopTimer(); stoppedOn = el; }
-    else if (stoppedOn === el) { stoppedOn = null; focusNext(el); }
-    else startTimer();
+    if (!el.classList.contains('end') || !restStep(el)) focusNext(el);
   });
-  document.addEventListener('focusin', e => { if (e.target !== stoppedOn) stoppedOn = null; });
+  exercisesEl.addEventListener('focusin', e => {
+    const from = e.relatedTarget;
+    const fromKeyboard = !advancing && from && from.classList.contains('end') && exercisesEl.contains(from) &&
+      Date.now() - lastTap > 600;
+    if (fromKeyboard && restStep(from)) { from.focus(); return; }
+    if (e.target !== stoppedOn) stoppedOn = null;
+  });
   document.addEventListener('visibilitychange', async () => {
     if (restEnd && document.visibilityState === 'visible') {
       updateTimer();
