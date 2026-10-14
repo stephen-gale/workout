@@ -453,9 +453,9 @@
 
   // Keyboard-only flow: the action key moves kg → reps → kg → reps. On the last box of a
   // row it starts the rest timer, then stops it, then moves on to the next set.
-  // Some keyboards (e.g. Samsung) always send "Next" and move focus themselves, so besides
-  // Enter we also catch focus leaving a row's last box without a tap.
-  let stoppedOn = null, lastTap = 0, advancing = false;
+  // Keyboards differ: some send Enter, some move focus themselves ("Next"), some just close
+  // ("Done"). So we also treat focus leaving a row's last box without a tap as the action key.
+  let stoppedOn = null, lastTap = 0, advancing = false, holding = false;
   document.addEventListener('pointerdown', () => { lastTap = Date.now(); }, true);
 
   function focusNext(from) {
@@ -481,12 +481,19 @@
     const el = e.target;
     if (!el.classList.contains('end') || !restStep(el)) focusNext(el);
   });
-  exercisesEl.addEventListener('focusin', e => {
-    const from = e.relatedTarget;
-    const fromKeyboard = !advancing && from && from.classList.contains('end') && exercisesEl.contains(from) &&
-      Date.now() - lastTap > 600;
-    if (fromKeyboard && restStep(from)) { from.focus(); return; }
-    if (e.target !== stoppedOn) stoppedOn = null;
+  exercisesEl.addEventListener('focusout', e => {
+    const el = e.target;
+    if (advancing || holding || !el.classList.contains('end') || Date.now() - lastTap < 600) return;
+    if (restStep(el)) {
+      // Pull focus back once the keyboard has finished moving it.
+      holding = true;
+      setTimeout(() => { el.focus(); holding = false; }, 0);
+    } else if (!e.relatedTarget) {
+      setTimeout(() => focusNext(el), 0);
+    }
+  });
+  document.addEventListener('focusin', e => {
+    if (!holding && e.target !== stoppedOn) stoppedOn = null;
   });
   document.addEventListener('visibilitychange', async () => {
     if (restEnd && document.visibilityState === 'visible') {
