@@ -1,5 +1,5 @@
 {
- "day": 1,
+ "day": 0,
  "log": [
   {
    "date": "2026-10-08T09:40:37.664Z",
@@ -384,6 +384,102 @@
    "set": 3,
    "weight": 10,
    "reps": 5
+  },
+  {
+   "date": "2026-10-14T09:52:22.522Z",
+   "day": "Triceps",
+   "exercise": "Seated overhead dumbbell extension",
+   "set": 1,
+   "weight": 12.5,
+   "reps": 15
+  },
+  {
+   "date": "2026-10-14T09:52:22.522Z",
+   "day": "Triceps",
+   "exercise": "Seated overhead dumbbell extension",
+   "set": 2,
+   "weight": 15,
+   "reps": 8
+  },
+  {
+   "date": "2026-10-14T09:52:22.522Z",
+   "day": "Triceps",
+   "exercise": "Seated overhead dumbbell extension",
+   "set": 3,
+   "weight": 15,
+   "reps": 8
+  },
+  {
+   "date": "2026-10-14T09:52:22.522Z",
+   "day": "Triceps",
+   "exercise": "Reverse curl (palms down)",
+   "set": 1,
+   "weight": 7,
+   "reps": 12
+  },
+  {
+   "date": "2026-10-14T09:52:22.522Z",
+   "day": "Triceps",
+   "exercise": "Reverse curl (palms down)",
+   "set": 2,
+   "weight": 7,
+   "reps": 11
+  },
+  {
+   "date": "2026-10-14T09:52:22.522Z",
+   "day": "Triceps",
+   "exercise": "Reverse curl (palms down)",
+   "set": 3,
+   "weight": 7,
+   "reps": 11
+  },
+  {
+   "date": "2026-10-14T09:52:22.522Z",
+   "day": "Triceps",
+   "exercise": "Lying dumbbell skull crusher",
+   "set": 1,
+   "weight": 7,
+   "reps": 10
+  },
+  {
+   "date": "2026-10-14T09:52:22.522Z",
+   "day": "Triceps",
+   "exercise": "Lying dumbbell skull crusher",
+   "set": 2,
+   "weight": 7,
+   "reps": 8
+  },
+  {
+   "date": "2026-10-14T09:52:22.522Z",
+   "day": "Triceps",
+   "exercise": "Lying dumbbell skull crusher",
+   "set": 3,
+   "weight": 7,
+   "reps": 6
+  },
+  {
+   "date": "2026-10-14T09:52:22.522Z",
+   "day": "Triceps",
+   "exercise": "Wrist curl (palms up)",
+   "set": 1,
+   "weight": 10,
+   "reps": 12
+  },
+  {
+   "date": "2026-10-14T09:52:22.522Z",
+   "day": "Triceps",
+   "exercise": "Wrist curl (palms up)",
+   "set": 2,
+   "weight": 10,
+   "reps": 12
+  },
+  {
+   "date": "2026-10-14T09:52:22.522Z",
+   "day": "Triceps",
+   "exercise": "Wrist curl (palms up)",
+   "set": 3,
+   "weight": 10,
+   "reps": 9
   }
  ]
 }
