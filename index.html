@@ -168,6 +168,7 @@
     <button id="sync-setup">GitHub sync</button>
   </div>
   <p class="sync" id="sync"></p>
+  <p class="sync">v19</p>
   </div>
 </main>
 
@@ -476,7 +477,7 @@
 
   const exercisesEl = document.getElementById('exercises');
   exercisesEl.addEventListener('keydown', e => {
-    if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+    if ((e.key !== 'Enter' && e.keyCode !== 13) || e.target.tagName !== 'INPUT') return;
     e.preventDefault();
     const el = e.target;
     if (!el.classList.contains('end') || !restStep(el)) focusNext(el);
@@ -495,6 +496,28 @@
   document.addEventListener('focusin', e => {
     if (!holding && e.target !== stoppedOn) stoppedOn = null;
   });
+
+  // Debug mode (open the page with ?debug): lists keyboard and focus events on screen.
+  if (location.search.includes('debug')) {
+    const box = document.createElement('pre');
+    box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:20;margin:0;padding:6px 8px;' +
+      'max-height:40vh;overflow:auto;background:#000;color:#0f0;font:11px/1.3 monospace;white-space:pre-wrap';
+    document.body.appendChild(box);
+    const name = el => el && el.getAttribute ? (el.getAttribute('aria-label') || el.tagName)
+      .replace(/ \(.*?\)/g, '').replace('weight', 'kg') + (el.classList.contains('end') ? ' [end]' : '') : '-';
+    const log = msg => {
+      box.textContent = `${new Date().toTimeString().slice(3, 8)} ${msg}\n` + box.textContent.split('\n').slice(0, 14).join('\n');
+    };
+    const ev = (t, f) => document.addEventListener(t, f, true);
+    ev('keydown', e => log(`keydown key=${e.key} code=${e.keyCode} on ${name(e.target)}`));
+    ev('beforeinput', e => { if (!/^insert(Text)?$/.test(e.inputType)) log(`beforeinput ${e.inputType}`); });
+    ev('focusout', e => log(`focusout ${name(e.target)} -> ${name(e.relatedTarget)} tapAgo=${Date.now() - lastTap}ms`));
+    ev('focusin', e => log(`focusin ${name(e.target)}`));
+    const origStart = startTimer, origStop = stopTimer;
+    startTimer = () => { log('TIMER START'); return origStart(); };
+    stopTimer = () => { log('TIMER STOP'); return origStop(); };
+    log('debug on — v19');
+  }
   document.addEventListener('visibilitychange', async () => {
     if (restEnd && document.visibilityState === 'visible') {
       updateTimer();
