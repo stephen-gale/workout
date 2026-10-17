@@ -64,7 +64,7 @@
       margin-bottom: 14px;
     }
     .exercise h2 { font-size: 17px; line-height: 1.1; font-weight: 800; letter-spacing: .02em; margin: 0; align-self: end; }
-    .exercise h2.pair { color: var(--muted); }
+    .exercise h2.pair { color: var(--muted); font-size: 15px; }
     .sets { display: grid; grid-template-columns: auto 1fr 1fr 1fr 1fr; gap: 6px 6px; align-items: center; }
     .sets .b { margin-left: 8px; }
     .sets > input.b { width: calc(100% - 8px); }
@@ -168,17 +168,19 @@
     <button id="sync-setup">GitHub sync</button>
   </div>
   <p class="sync" id="sync"></p>
-  <p class="sync">v19</p>
+  <p class="sync">v20</p>
   </div>
 </main>
 
 <script>
   // Each day is two supersets: the main lift, then a forearm exercise straight after.
-  const WRIST = 'Wrist curl (palms up)';
-  const REVERSE_CURL = 'Reverse curl (palms down)';
+  // Exercise names are the log's keys: placeholders come from the last time a name was
+  // logged, however long ago, so switching back to an old exercise picks up where it left off.
+  const WRIST = 'EZ bar wrist curl (palms up)';
+  const REVERSE_WRIST = 'Reverse wrist curl (palms down)';
   const PLAN = [
-    { name: 'Biceps',  supersets: [['Incline dumbbell curl', REVERSE_CURL], ['Hammer curl', WRIST]] },
-    { name: 'Triceps', supersets: [['Seated overhead dumbbell extension', REVERSE_CURL], ['Lying dumbbell skull crusher', WRIST]] },
+    { name: 'Biceps',  supersets: [['Incline dumbbell curl', REVERSE_WRIST], ['Hammer curl', WRIST]] },
+    { name: 'Triceps', supersets: [['Seated overhead dumbbell extension', REVERSE_WRIST], ['Lying dumbbell skull crusher', WRIST]] },
   ];
   const exercisesOf = day => day.supersets.flat();
   // Short labels for the screen; the log keeps the full names.
@@ -187,8 +189,10 @@
     'Hammer curl': 'Hammer Curl',
     'Seated overhead dumbbell extension': 'Overhead DB Ext',
     'Lying dumbbell skull crusher': 'DB Skull Crusher',
-    [WRIST]: 'Wrist Curl',
-    [REVERSE_CURL]: 'Reverse Curl',
+    [WRIST]: 'EZ Bar Wrist Curl',
+    [REVERSE_WRIST]: 'Reverse Wrist Curl',
+    'Wrist curl (palms up)': 'Wrist Curl',
+    'Reverse curl (palms down)': 'Reverse Curl',
   };
   const label = ex => SHORT[ex] || ex;
   const SETS = 3;
@@ -516,7 +520,7 @@
     const origStart = startTimer, origStop = stopTimer;
     startTimer = () => { log('TIMER START'); return origStart(); };
     stopTimer = () => { log('TIMER STOP'); return origStop(); };
-    log('debug on — v19');
+    log('debug on — v20');
   }
   document.addEventListener('visibilitychange', async () => {
     if (restEnd && document.visibilityState === 'visible') {
