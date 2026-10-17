@@ -1,5 +1,5 @@
 {
- "day": 0,
+ "day": 1,
  "log": [
   {
    "date": "2026-10-08T09:40:37.664Z",
@@ -672,6 +672,78 @@
    "set": 3,
    "weight": 10,
    "reps": 16
+  },
+  {
+   "date": "2026-10-17T13:42:28.875Z",
+   "day": "Biceps",
+   "exercise": "Incline dumbbell curl",
+   "set": 1,
+   "weight": 7,
+   "reps": 10
+  },
+  {
+   "date": "2026-10-17T13:42:28.875Z",
+   "day": "Biceps",
+   "exercise": "Incline dumbbell curl",
+   "set": 2,
+   "weight": 7,
+   "reps": 7
+  },
+  {
+   "date": "2026-10-17T13:42:28.875Z",
+   "day": "Biceps",
+   "exercise": "Incline dumbbell curl",
+   "set": 3,
+   "weight": 7,
+   "reps": 5
+  },
+  {
+   "date": "2026-10-17T13:42:28.875Z",
+   "day": "Biceps",
+   "exercise": "Reverse curl (palms down)",
+   "set": 1,
+   "weight": 7,
+   "reps": 9
+  },
+  {
+   "date": "2026-10-17T13:42:28.875Z",
+   "day": "Biceps",
+   "exercise": "Reverse curl (palms down)",
+   "set": 2,
+   "weight": 7,
+   "reps": 7
+  },
+  {
+   "date": "2026-10-17T13:42:28.875Z",
+   "day": "Biceps",
+   "exercise": "Reverse curl (palms down)",
+   "set": 3,
+   "weight": 7,
+   "reps": 6
+  },
+  {
+   "date": "2026-10-17T13:42:28.875Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 1,
+   "weight": 7,
+   "reps": 10
+  },
+  {
+   "date": "2026-10-17T13:42:28.875Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 2,
+   "weight": 7,
+   "reps": 12
+  },
+  {
+   "date": "2026-10-17T13:42:28.875Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 3,
+   "weight": 7,
+   "reps": 12
   }
  ]
 }
