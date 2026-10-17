@@ -168,7 +168,7 @@
     <button id="sync-setup">GitHub sync</button>
   </div>
   <p class="sync" id="sync"></p>
-  <p class="sync">v20</p>
+  <p class="sync">v21</p>
   </div>
 </main>
 
@@ -438,6 +438,7 @@
     timerEl.classList.remove('over');
     restBar.classList.remove('over');
     restBar.hidden = false;
+    placeBar();
     updateTimer();
     tick = setInterval(updateTimer, 250);
     try { wakeLock = await navigator.wakeLock?.request('screen'); } catch (e) {}
@@ -455,6 +456,14 @@
 
   timerEl.addEventListener('click', () => restEnd ? stopTimer() : startTimer());
   restBar.addEventListener('click', stopTimer);
+
+  // With the keyboard open, Chrome scrolls the visible area separately from the page, which
+  // carries position:fixed elements off-screen. Keep the bar at the top of what's visible.
+  const vv = window.visualViewport;
+  function placeBar() {
+    if (vv) restBar.style.transform = `translateY(${Math.max(0, vv.offsetTop)}px)`;
+  }
+  if (vv) { vv.addEventListener('resize', placeBar); vv.addEventListener('scroll', placeBar); }
 
   // Keyboard-only flow: the action key moves kg → reps → kg → reps. On the last box of a
   // row it starts the rest timer, then stops it, then moves on to the next set.
@@ -520,7 +529,7 @@
     const origStart = startTimer, origStop = stopTimer;
     startTimer = () => { log('TIMER START'); return origStart(); };
     stopTimer = () => { log('TIMER STOP'); return origStop(); };
-    log('debug on — v20');
+    log('debug on — v21');
   }
   document.addEventListener('visibilitychange', async () => {
     if (restEnd && document.visibilityState === 'visible') {
