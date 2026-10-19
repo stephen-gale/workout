@@ -168,7 +168,7 @@
     <button id="sync-setup">GitHub sync</button>
   </div>
   <p class="sync" id="sync"></p>
-  <p class="sync">v21</p>
+  <p class="sync">v22</p>
   </div>
 </main>
 
@@ -179,13 +179,20 @@
   const WRIST = 'EZ bar wrist curl (palms up)';
   const REVERSE_WRIST = 'Reverse wrist curl (palms down)';
   const PLAN = [
-    { name: 'Biceps',  supersets: [['Incline dumbbell curl', REVERSE_WRIST], ['Hammer curl', WRIST]] },
+    { name: 'Biceps',  get supersets() { return [[bicepsCurl(), REVERSE_WRIST], ['Hammer curl', WRIST]]; } },
     { name: 'Triceps', supersets: [['Seated overhead dumbbell extension', REVERSE_WRIST], ['Lying dumbbell skull crusher', WRIST]] },
   ];
   const exercisesOf = day => day.supersets.flat();
+  // Incline curls until the Biceps day on 19 Oct 2026 is done, standing curls from the next one.
+  const STANDING_FROM = '2026-10-18T23:00:00.000Z'; // midnight 19 Oct, UK time
+  function bicepsCurl() {
+    const done = state.log.some(e => e.day === 'Biceps' && e.date >= STANDING_FROM);
+    return done ? 'Standing dumbbell curl' : 'Incline dumbbell curl';
+  }
   // Short labels for the screen; the log keeps the full names.
   const SHORT = {
     'Incline dumbbell curl': 'Incline DB Curl',
+    'Standing dumbbell curl': 'Standing DB Curl',
     'Hammer curl': 'Hammer Curl',
     'Seated overhead dumbbell extension': 'Overhead DB Ext',
     'Lying dumbbell skull crusher': 'DB Skull Crusher',
@@ -529,7 +536,7 @@
     const origStart = startTimer, origStop = stopTimer;
     startTimer = () => { log('TIMER START'); return origStart(); };
     stopTimer = () => { log('TIMER STOP'); return origStop(); };
-    log('debug on — v21');
+    log('debug on — v22');
   }
   document.addEventListener('visibilitychange', async () => {
     if (restEnd && document.visibilityState === 'visible') {
