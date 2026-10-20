@@ -1,5 +1,5 @@
 {
- "day": 0,
+ "day": 1,
  "log": [
   {
    "date": "2026-10-08T09:40:37.664Z",
@@ -816,6 +816,78 @@
    "set": 3,
    "weight": 10,
    "reps": 5
+  },
+  {
+   "date": "2026-10-19T20:26:18.282Z",
+   "day": "Biceps",
+   "exercise": "Reverse wrist curl (palms down)",
+   "set": 1,
+   "weight": 7,
+   "reps": 11
+  },
+  {
+   "date": "2026-10-19T20:26:18.282Z",
+   "day": "Biceps",
+   "exercise": "Reverse wrist curl (palms down)",
+   "set": 2,
+   "weight": 7,
+   "reps": 10
+  },
+  {
+   "date": "2026-10-19T20:26:18.282Z",
+   "day": "Biceps",
+   "exercise": "Reverse wrist curl (palms down)",
+   "set": 3,
+   "weight": 7,
+   "reps": 10
+  },
+  {
+   "date": "2026-10-19T20:26:18.282Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 1,
+   "weight": 7,
+   "reps": 10
+  },
+  {
+   "date": "2026-10-19T20:26:18.282Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 2,
+   "weight": 7,
+   "reps": 10
+  },
+  {
+   "date": "2026-10-19T20:26:18.282Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 3,
+   "weight": 7,
+   "reps": 9
+  },
+  {
+   "date": "2026-10-19T20:26:18.282Z",
+   "day": "Biceps",
+   "exercise": "EZ bar wrist curl (palms up)",
+   "set": 1,
+   "weight": 20,
+   "reps": 10
+  },
+  {
+   "date": "2026-10-19T20:26:18.282Z",
+   "day": "Biceps",
+   "exercise": "EZ bar wrist curl (palms up)",
+   "set": 2,
+   "weight": 20,
+   "reps": 15
+  },
+  {
+   "date": "2026-10-19T20:26:18.282Z",
+   "day": "Biceps",
+   "exercise": "EZ bar wrist curl (palms up)",
+   "set": 3,
+   "weight": 20,
+   "reps": 20
   }
  ]
 }
