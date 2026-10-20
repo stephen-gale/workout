@@ -168,7 +168,7 @@
     <button id="sync-setup">GitHub sync</button>
   </div>
   <p class="sync" id="sync"></p>
-  <p class="sync">v22</p>
+  <p class="sync">v23</p>
   </div>
 </main>
 
@@ -176,7 +176,7 @@
   // Each day is two supersets: the main lift, then a forearm exercise straight after.
   // Exercise names are the log's keys: placeholders come from the last time a name was
   // logged, however long ago, so switching back to an old exercise picks up where it left off.
-  const WRIST = 'EZ bar wrist curl (palms up)';
+  const WRIST = 'Wrist curl (palms up)';
   const REVERSE_WRIST = 'Reverse wrist curl (palms down)';
   const PLAN = [
     { name: 'Biceps',  get supersets() { return [[bicepsCurl(), REVERSE_WRIST], ['Hammer curl', WRIST]]; } },
@@ -196,9 +196,9 @@
     'Hammer curl': 'Hammer Curl',
     'Seated overhead dumbbell extension': 'Overhead DB Ext',
     'Lying dumbbell skull crusher': 'DB Skull Crusher',
-    [WRIST]: 'EZ Bar Wrist Curl',
+    [WRIST]: 'Wrist Curl',
     [REVERSE_WRIST]: 'Reverse Wrist Curl',
-    'Wrist curl (palms up)': 'Wrist Curl',
+    'EZ bar wrist curl (palms up)': 'EZ Bar Wrist Curl',
     'Reverse curl (palms down)': 'Reverse Curl',
   };
   const label = ex => SHORT[ex] || ex;
@@ -536,7 +536,7 @@
     const origStart = startTimer, origStop = stopTimer;
     startTimer = () => { log('TIMER START'); return origStart(); };
     stopTimer = () => { log('TIMER STOP'); return origStop(); };
-    log('debug on — v22');
+    log('debug on — v23');
   }
   document.addEventListener('visibilitychange', async () => {
     if (restEnd && document.visibilityState === 'visible') {
