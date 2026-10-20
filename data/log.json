@@ -1,5 +1,5 @@
 {
- "day": 1,
+ "day": 0,
  "log": [
   {
    "date": "2026-10-08T09:40:37.664Z",
@@ -888,6 +888,78 @@
    "set": 3,
    "weight": 20,
    "reps": 20
+  },
+  {
+   "date": "2026-10-20T21:18:11.483Z",
+   "day": "Triceps",
+   "exercise": "Seated overhead dumbbell extension",
+   "set": 1,
+   "weight": 17.5,
+   "reps": 12
+  },
+  {
+   "date": "2026-10-20T21:18:11.483Z",
+   "day": "Triceps",
+   "exercise": "Seated overhead dumbbell extension",
+   "set": 2,
+   "weight": 17.5,
+   "reps": 10
+  },
+  {
+   "date": "2026-10-20T21:18:11.483Z",
+   "day": "Triceps",
+   "exercise": "Seated overhead dumbbell extension",
+   "set": 3,
+   "weight": 17.5,
+   "reps": 8
+  },
+  {
+   "date": "2026-10-20T21:18:11.483Z",
+   "day": "Triceps",
+   "exercise": "Reverse wrist curl (palms down)",
+   "set": 1,
+   "weight": 7,
+   "reps": 15
+  },
+  {
+   "date": "2026-10-20T21:18:11.483Z",
+   "day": "Triceps",
+   "exercise": "Reverse wrist curl (palms down)",
+   "set": 2,
+   "weight": 7,
+   "reps": 15
+  },
+  {
+   "date": "2026-10-20T21:18:11.483Z",
+   "day": "Triceps",
+   "exercise": "Reverse wrist curl (palms down)",
+   "set": 3,
+   "weight": 7,
+   "reps": 12
+  },
+  {
+   "date": "2026-10-20T21:18:11.483Z",
+   "day": "Triceps",
+   "exercise": "Lying dumbbell skull crusher",
+   "set": 1,
+   "weight": 10,
+   "reps": 8
+  },
+  {
+   "date": "2026-10-20T21:18:11.483Z",
+   "day": "Triceps",
+   "exercise": "Lying dumbbell skull crusher",
+   "set": 2,
+   "weight": 10,
+   "reps": 8
+  },
+  {
+   "date": "2026-10-20T21:18:11.483Z",
+   "day": "Triceps",
+   "exercise": "Lying dumbbell skull crusher",
+   "set": 3,
+   "weight": 10,
+   "reps": 8
   }
  ]
 }
