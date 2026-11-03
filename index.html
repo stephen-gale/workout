@@ -66,6 +66,7 @@
     .exercise h2 { font-size: 17px; line-height: 1.1; font-weight: 800; letter-spacing: .02em; margin: 0; align-self: end; }
     .exercise h2.pair { color: var(--muted); font-size: 15px; }
     .sets { display: grid; grid-template-columns: auto 1fr 1fr 1fr 1fr; gap: 6px 6px; align-items: center; }
+    .sets.single { grid-template-columns: auto 1fr 1fr; gap: 6px 10px; }
     .sets .b { margin-left: 8px; }
     .sets > input.b { width: calc(100% - 8px); }
     .sets h2 { grid-column: span 2; }
@@ -168,27 +169,25 @@
     <button id="sync-setup">GitHub sync</button>
   </div>
   <p class="sync" id="sync"></p>
-  <p class="sync">v23</p>
+  <p class="sync">v24</p>
   </div>
 </main>
 
 <script>
-  // Each day is two supersets: the main lift, then a forearm exercise straight after.
+  // 3-day split: each day is two exercises × 3 sets. Each entry in `supersets` is one card;
+  // a card with two names would be a superset.
+  // Order: forearms come after triceps, so they're fresh (hammer curls were two days earlier),
+  // and wrist curls barely tire the biceps for the Biceps day that follows.
   // Exercise names are the log's keys: placeholders come from the last time a name was
   // logged, however long ago, so switching back to an old exercise picks up where it left off.
   const WRIST = 'Wrist curl (palms up)';
   const REVERSE_WRIST = 'Reverse wrist curl (palms down)';
   const PLAN = [
-    { name: 'Biceps',  get supersets() { return [[bicepsCurl(), REVERSE_WRIST], ['Hammer curl', WRIST]]; } },
-    { name: 'Triceps', supersets: [['Seated overhead dumbbell extension', REVERSE_WRIST], ['Lying dumbbell skull crusher', WRIST]] },
+    { name: 'Biceps',   supersets: [['Standing dumbbell curl'], ['Hammer curl']] },
+    { name: 'Triceps',  supersets: [['Seated overhead dumbbell extension'], ['Lying dumbbell skull crusher']] },
+    { name: 'Forearms', supersets: [[WRIST], [REVERSE_WRIST]] },
   ];
   const exercisesOf = day => day.supersets.flat();
-  // Incline curls until the Biceps day on 19 Oct 2026 is done, standing curls from the next one.
-  const STANDING_FROM = '2026-10-18T23:00:00.000Z'; // midnight 19 Oct, UK time
-  function bicepsCurl() {
-    const done = state.log.some(e => e.day === 'Biceps' && e.date >= STANDING_FROM);
-    return done ? 'Standing dumbbell curl' : 'Incline dumbbell curl';
-  }
   // Short labels for the screen; the log keeps the full names.
   const SHORT = {
     'Incline dumbbell curl': 'Incline DB Curl',
@@ -249,7 +248,7 @@
       const card = document.createElement('section');
       card.className = 'exercise';
       const grid = document.createElement('div');
-      grid.className = 'sets';
+      grid.className = pair.length === 1 ? 'sets single' : 'sets';
       card.appendChild(grid);
       // Last time's numbers appear only as placeholders; nothing is filled in for you.
       const cols = pair.map(ex => ({ ex, last: lastTime(ex), draft: draftFor(ex) }));
@@ -536,7 +535,7 @@
     const origStart = startTimer, origStop = stopTimer;
     startTimer = () => { log('TIMER START'); return origStart(); };
     stopTimer = () => { log('TIMER STOP'); return origStop(); };
-    log('debug on — v23');
+    log('debug on — v24');
   }
   document.addEventListener('visibilitychange', async () => {
     if (restEnd && document.visibilityState === 'visible') {
