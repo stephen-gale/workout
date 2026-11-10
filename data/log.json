@@ -1,5 +1,5 @@
 {
- "day": 0,
+ "day": 1,
  "log": [
   {
    "date": "2026-10-08T09:40:37.664Z",
@@ -1128,6 +1128,54 @@
    "set": 3,
    "weight": 7,
    "reps": 11
+  },
+  {
+   "date": "2026-11-10T10:21:47.474Z",
+   "day": "Biceps",
+   "exercise": "Standing dumbbell curl",
+   "set": 1,
+   "weight": 7,
+   "reps": 10
+  },
+  {
+   "date": "2026-11-10T10:21:47.474Z",
+   "day": "Biceps",
+   "exercise": "Standing dumbbell curl",
+   "set": 2,
+   "weight": 10,
+   "reps": 7
+  },
+  {
+   "date": "2026-11-10T10:21:47.474Z",
+   "day": "Biceps",
+   "exercise": "Standing dumbbell curl",
+   "set": 3,
+   "weight": 10,
+   "reps": 7
+  },
+  {
+   "date": "2026-11-10T10:21:47.474Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 1,
+   "weight": 7,
+   "reps": 10
+  },
+  {
+   "date": "2026-11-10T10:21:47.474Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 2,
+   "weight": 7,
+   "reps": 8
+  },
+  {
+   "date": "2026-11-10T10:21:47.474Z",
+   "day": "Biceps",
+   "exercise": "Hammer curl",
+   "set": 3,
+   "weight": 7,
+   "reps": 8
   }
  ]
 }
