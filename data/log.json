@@ -1,5 +1,5 @@
 {
- "day": 2,
+ "day": 0,
  "log": [
   {
    "date": "2026-10-08T09:40:37.664Z",
@@ -1224,6 +1224,54 @@
    "set": 3,
    "weight": 7,
    "reps": 5
+  },
+  {
+   "date": "2026-11-12T10:15:02.220Z",
+   "day": "Forearms",
+   "exercise": "Wrist curl (palms up)",
+   "set": 1,
+   "weight": 7,
+   "reps": 9
+  },
+  {
+   "date": "2026-11-12T10:15:02.220Z",
+   "day": "Forearms",
+   "exercise": "Wrist curl (palms up)",
+   "set": 2,
+   "weight": 7,
+   "reps": 8
+  },
+  {
+   "date": "2026-11-12T10:15:02.220Z",
+   "day": "Forearms",
+   "exercise": "Wrist curl (palms up)",
+   "set": 3,
+   "weight": 7,
+   "reps": 6
+  },
+  {
+   "date": "2026-11-12T10:15:02.220Z",
+   "day": "Forearms",
+   "exercise": "Reverse wrist curl (palms down)",
+   "set": 1,
+   "weight": 7,
+   "reps": 10
+  },
+  {
+   "date": "2026-11-12T10:15:02.220Z",
+   "day": "Forearms",
+   "exercise": "Reverse wrist curl (palms down)",
+   "set": 2,
+   "weight": 7,
+   "reps": 10
+  },
+  {
+   "date": "2026-11-12T10:15:02.220Z",
+   "day": "Forearms",
+   "exercise": "Reverse wrist curl (palms down)",
+   "set": 3,
+   "weight": 7,
+   "reps": 11
   }
  ]
 }
